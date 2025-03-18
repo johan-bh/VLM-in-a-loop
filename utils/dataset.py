@@ -17,8 +17,8 @@ class RadiologyDataset(Dataset):
          │    └── ... (up to 3999.xml)
          └── radiology/
               └── extract/
-                   ├── CXR2_IM-0652-1001.jpg
-                   ├── CXR2_IM-0652-2001.jpg
+                   ├── CXR2_IM-0652-1001.png
+                   ├── CXR2_IM-0652-2001.png
                    └── ...
     
     Attributes:
@@ -69,13 +69,16 @@ class RadiologyDataset(Dataset):
         root = tree.getroot()
         
         # Extract report text from all AbstractText elements under Abstract
-        report_texts: List[str] = []
+        report: Dict[str, Any] = {}
         abstract = root.find('.//Abstract')
         if abstract is not None:
             for abstract_text in abstract.findall('AbstractText'):
+                # Check the label attribute to ensure it's a clinical report
                 if abstract_text.text:
-                    report_texts.append(abstract_text.text.strip())
-        report: str = " ".join(report_texts)
+                    if "Label" in abstract_text.attrib:
+                        report[abstract_text.attrib["Label"]] = abstract_text.text.strip()
+                    else:
+                        report["unlabeled"] = abstract_text.text.strip()
         
         # Extract basic metadata such as article_date, title, and specialty
         metadata: Dict[str, Any] = {}
@@ -103,6 +106,8 @@ class RadiologyDataset(Dataset):
                 if url_elem is not None and url_elem.text:
                     # Get the basename of the file from the URL and join with the image directory
                     image_file = os.path.basename(url_elem.text.strip())
+                    # replace the extension with .png, there's a mismatch between the XML and actual image files
+                    image_file = os.path.splitext(image_file)[0] + ".png"
                     image_path = os.path.join(self.image_dir, image_file)
                     image_paths.append(image_path)
         
@@ -118,7 +123,7 @@ class RadiologyDataset(Dataset):
         Returns:
             Dict[str, Any]: A dictionary containing:
                 - "images": List of loaded PIL.Image objects (or transformed images).
-                - "report": The extracted report text.
+                - "report": The extracted report text as dict.
                 - "metadata": Dictionary of metadata information.
         """
         xml_file: str = self.xml_files[idx]
@@ -137,25 +142,3 @@ class RadiologyDataset(Dataset):
             "report": data["report"],
             "metadata": data["metadata"],
         }
-
-if __name__ == "__main__":
-    # Test the RadiologyDataset class
-    import torchvision.transforms as T
-    from pprint import pprint
-
-    # Initialize the dataset
-    xml_dir = "/VLM-in-a-loop/data/ecgen-radiology"
-    image_dir = "/VLM-in-a-loop/data/radiology/extract"
-    transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
-    dataset = RadiologyDataset(xml_dir, image_dir, transform=transform)
-
-    # Test the dataset
-    sample = dataset[0]
-    print("Report text:", sample["report"])
-    print("Metadata:")
-    pprint(sample["metadata"])
-    print("Images:")
-    for i, img in enumerate(sample["images"]):
-        print(f"Image {i + 1}: {img.shape}")
-        if i >= 5: # Only show the first 5 images
-            break
