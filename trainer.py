@@ -66,5 +66,5 @@ class VLMTrainerHF:
         """
         logger.info("Starting evaluation...")
         metrics = self.trainer.evaluate()
-        logger.info("Evaluation metrics: %s", metrics)
+        logger.info(f"Evaluation metrics: {metrics}")
         return metrics

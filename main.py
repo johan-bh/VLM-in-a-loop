@@ -69,7 +69,20 @@ def main(xml_dir: str, image_dir: str, save_dir: str, augment: bool, batch_size:
     logger.info(f"Training for {epochs} epochs with batch size {batch_size} on device: {trainer.device}")
     trainer.train()
     metrics = trainer.evaluate()
-    logger.info("Final evaluation metrics: %s", metrics)
+    logger.info(f"Final evaluation metrics: {metrics}")
+    
+    # Generate samples
+    logger.info("Generating samples...")
+    samples = trainer.generate_samples(num_samples=3)
+    for i, sample in enumerate(samples):
+        logger.info(f"Sample {i+1}: {sample}")
+        
+    # Save model and tokenizer
+    model_path = os.path.join(save_dir, "model")
+    tokenizer_path = os.path.join(save_dir, "tokenizer")
+    model_wrapper.save(model_path)
+    tokenizer.save_pretrained(tokenizer_path)
+    logger.info(f"Model and tokenizer saved to '{model_path}' and '{tokenizer_path}'.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fine-tune Qwen2 VL 7B with LoRA using PEFT on radiology reports.")
