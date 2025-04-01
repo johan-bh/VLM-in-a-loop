@@ -1,5 +1,6 @@
 data/
 logs/
 results/
+reports/
 **/__pycache__/
 **/*.pyc
