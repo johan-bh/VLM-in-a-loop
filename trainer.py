@@ -31,7 +31,7 @@ class VLMTrainerHF:
             eval_steps=1000,
             logging_steps=1000,
             save_steps=1500,
-            num_train_epochs=3,
+            num_train_epochs=10,
             weight_decay=0.01,
             learning_rate=2e-4,
             fp16=True,
