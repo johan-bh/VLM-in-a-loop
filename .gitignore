@@ -4,3 +4,8 @@ results/
 reports/
 **/__pycache__/
 **/*.pyc
+best_model.pt
+chest_xray_vit_model/config.json
+chest_xray_vit_model/model.safetensors
+chest_xray_vit_model_improved/model.safetensors
+chest_xray_vit_model_improved/config.json
