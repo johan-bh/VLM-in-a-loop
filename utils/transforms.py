@@ -13,12 +13,12 @@ def get_transforms(augment: bool = False) -> Any:
     """
     if augment:
         return transforms.Compose([
-            transforms.Resize((256, 256)),
+            transforms.Resize((128, 128)),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
         ])
     else:
         return transforms.Compose([
-            transforms.Resize((256, 256)),
+            transforms.Resize((128, 128)),
             transforms.ToTensor(),
         ])

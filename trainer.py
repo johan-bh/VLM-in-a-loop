@@ -25,17 +25,17 @@ class VLMTrainerHF:
         
         self.training_args = TrainingArguments(
             output_dir="./results",
-            per_device_train_batch_size=2,
-            per_device_eval_batch_size=2,
-            evaluation_strategy="epoch",
-            eval_steps=1000,
-            logging_steps=1000,
-            save_steps=1500,
-            num_train_epochs=10,
-            weight_decay=0.01,
-            learning_rate=2e-4,
+            per_device_train_batch_size=1,
+            per_device_eval_batch_size=1,
+            # eval_strategy="epoch",
+            # eval_steps=1000,
+            # logging_steps=1000,
+            # save_steps=1500,
+            # num_train_epochs=10,
+            # weight_decay=0.01,
+            # learning_rate=2e-4,
             fp16=True,
-            report_to="none"
+            # report_to="none"
         )
         self.data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
         

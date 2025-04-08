@@ -36,11 +36,12 @@ def check_create_paths(xml_dir: str, image_dir: str, save_dir: str) -> None:
     os.makedirs(save_dir, exist_ok=True)
     logger.debug("All directories are present and correct.")
 
-def main(xml_dir: str, image_dir: str, save_dir: str, augment: bool, batch_size: int, epochs: int) -> None:
+def main(model_type: str, xml_dir: str, image_dir: str, save_dir: str, augment: bool, batch_size: int, epochs: int) -> None:
     """
     Main function for fine-tuning the Qwen2 VL 7B model on radiology reports.
     
     Args:
+        model_type (str): Model type to load.
         xml_dir (str): Directory containing XML files.
         image_dir (str): Directory containing images.
         save_dir (str): Directory to save outputs.
@@ -50,10 +51,20 @@ def main(xml_dir: str, image_dir: str, save_dir: str, augment: bool, batch_size:
     """
     configure_logger()
     check_create_paths(xml_dir, image_dir, save_dir)
-    
-    # Load Qwen2 VL 7B model (with LoRA) and tokenizer
-    # model_wrapper = Qwen2VLV7BModel(model_name="Qwen/Qwen2.5-7B-Instruct")
-    model_wrapper = Qwen2VLV7BModel(model_name="unsloth/Qwen2.5-7B-bnb-4bit")
+    if model_type == "7B":
+        model_name = "Qwen/Qwen2.5-VL-7B-Instruct"
+        # Load Qwen2 VL 7B model (with LoRA) and tokenizer
+        # model_wrapper = Qwen2VLV7BModel(model_name="Qwen/Qwen2.5-7B-Instruct")
+        # model_wrapper = Qwen2VLV7BModel(model_name="unsloth/Qwen2.5-7B-bnb-4bit")
+        logger.info(f"Loading model: {model_name}")
+        model_wrapper = Qwen2VLV7BModel(model_name=model_name)
+    elif model_type == "3B":
+        model_name = "Qwen/Qwen2.5-VL-3B-Instruct-AWQ"
+        # Load Qwen2 VL 3B model (with LoRA) and tokenizer
+        logger.info(f"Loading model: {model_name}")
+        model_wrapper = Qwen2VLV7BModel(model_name=model_name)
+    else:
+        raise ValueError(f"Invalid model type: {model_type}")
     tokenizer = model_wrapper.tokenizer
     
     # Create fine-tuning dataset (using radiology reports)
@@ -86,6 +97,7 @@ def main(xml_dir: str, image_dir: str, save_dir: str, augment: bool, batch_size:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fine-tune Qwen2 VL 7B with LoRA using PEFT on radiology reports.")
+    parser.add_argument("--model_type", type=str, default="3B", choices=["7B", "3B"], help="Model type to load.")
     parser.add_argument("--xml_dir", type=str, default="data/ecgen-radiology", help="Directory path for XML files.")
     parser.add_argument("--image_dir", type=str, default="data/radiology", help="Directory path for radiology images.")
     parser.add_argument("--save_dir", type=str, default="data/samples", help="Directory to save outputs.")
@@ -94,5 +106,5 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=3, help="Number of training epochs.")
     args = parser.parse_args()
     
-    main(xml_dir=args.xml_dir, image_dir=args.image_dir, save_dir=args.save_dir, 
+    main(model_type=args.model_type, xml_dir=args.xml_dir, image_dir=args.image_dir, save_dir=args.save_dir, 
          augment=args.augment, batch_size=args.batch_size, epochs=args.epochs)
